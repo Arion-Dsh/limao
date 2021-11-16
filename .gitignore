@@ -1,0 +1,10 @@
+last-change
+*.apk
+*.app
+*.framework
+*.aar
+*.iml
+.idea
+.gradle
+examples/**/html
+examples/**/*.wav
