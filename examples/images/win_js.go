@@ -7,7 +7,7 @@ import (
 	"limao"
 )
 
-var i limao.Image
+var i *limao.Image
 
 type app struct{}
 
@@ -27,7 +27,7 @@ func main() {
 
 	i = limao.NewImageFromFile("/gopher.png")
 	a := new(app)
-	o := &limao.RunOpts{Width: 1600, Height: 1800}
+	o := &limao.RunOpts{Width: 800, Height: 600}
 	limao.Run(a, o)
 
 }

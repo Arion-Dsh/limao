@@ -1,5 +1,5 @@
 //go:build android || ios || js || itest
-//+build android || ios || js || itest
+// +build android ios js itest
 
 package graphics
 
@@ -31,6 +31,7 @@ func DrawTexture2D(t2d Texture, geom geom.Geom, r image.Rectangle) {
 	ctx.Enable(gl.BLEND)
 
 	ctx.UseProgram(t.program)
+
 	t.bindData(ctx, g.vw, g.vh, geom, r)
 
 	ctx.ActiveTexture(gl.TEXTURE0)

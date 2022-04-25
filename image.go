@@ -51,6 +51,7 @@ func NewImageFromFile(path string) *Image {
 
 	return img
 }
+
 func newImage(rgba *image.RGBA, w, h int) *Image {
 	r := image.Rect(0, 0, w, h)
 	img := &Image{
@@ -80,6 +81,7 @@ type Image struct {
 func (img *Image) Geom() *geom.Geom {
 	return img.geom
 }
+
 func (img *Image) Dx() int {
 	return img.width
 }
@@ -142,7 +144,6 @@ func (img *Image) Load() {
 		}
 	}
 	loadSub(img.subs)
-
 }
 
 func (img *Image) Draw(opts *geom.Geom) {

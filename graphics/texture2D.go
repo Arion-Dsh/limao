@@ -14,6 +14,10 @@ type texture2D struct {
 	mvp     gl.Uniform
 	uvp     gl.Uniform
 
+	vert       gl.Buffer
+	vertLoc    gl.Attrib
+	clrVertLoc gl.Attrib
+
 	gltex gl.Texture
 	w, h  int
 }

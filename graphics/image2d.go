@@ -11,7 +11,6 @@ type images2Dv3 struct {
 	vao     gl.VertexArray
 	program gl.Program
 	vert    gl.Buffer
-	clrVert gl.Buffer
 
 	vertLoc    gl.Attrib
 	clrVertLoc gl.Attrib
@@ -45,7 +44,6 @@ func newImages2D() images {
 	i.program = program
 
 	i.vert = ctx.CreateBuffer()
-	i.clrVert = ctx.CreateBuffer()
 
 	i.vertLoc = ctx.GetAttribLocation(program, "vert")
 	i.clrVertLoc = ctx.GetAttribLocation(program, "clr_vert")
@@ -88,11 +86,14 @@ func newImages2D() images {
 func (imgs *images2Dv3) newTexture2D(w, h int) Texture {
 
 	tex := &texture2D{
-		ctx:     g.ctx,
-		program: imgs.program,
-		vao:     imgs.vao,
-		mvp:     imgs.mvp,
-		uvp:     imgs.uvp,
+		ctx:        g.ctx,
+		program:    imgs.program,
+		vao:        imgs.vao,
+		mvp:        imgs.mvp,
+		uvp:        imgs.uvp,
+		vert:       imgs.vert,
+		vertLoc:    imgs.vertLoc,
+		clrVertLoc: imgs.clrVertLoc,
 
 		w: w,
 		h: h,
@@ -117,7 +118,6 @@ func (i *images2Dv3) release() {
 	}
 
 	ctx := g.ctx
-	ctx.DeleteBuffer(i.clrVert)
 	ctx.DeleteBuffer(i.vert)
 	ctx.DeleteVertexArray(i.vao)
 	ctx.DeleteProgram(i.program)

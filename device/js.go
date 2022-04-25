@@ -1,5 +1,5 @@
 //go:build js
-//+build js
+// +build js
 
 package device
 
@@ -20,6 +20,9 @@ func (de *device) run() {
 	if !jsDoc.Truthy() {
 		return
 	}
+
+	bodyStyle := jsDoc.Get("body").Get("style")
+	bodyStyle.Set("margin", "0")
 
 	canvasEl = jsDoc.Call("createElement", "canvas")
 	jsDoc.Get("body").Call("appendChild", canvasEl)
@@ -76,7 +79,7 @@ func (de *device) processEvents(doc js.Value) {
 		e := args[0]
 		x := e.Get("clientX").Int()
 		y := e.Get("clientY").Int()
-		input.SetCursor(int32(x), int32(y))
+		input.SetCursor(int(x), int(y))
 		return nil
 	}))
 
