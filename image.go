@@ -6,7 +6,6 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"image/png"
-	"limao/geom"
 	"limao/graphics"
 	"limao/graphics/gl"
 )
@@ -60,7 +59,6 @@ func newImage(rgba *image.RGBA, w, h int) *Image {
 		width:  w,
 		height: h,
 	}
-	img.geom = geom.New()
 	return img
 }
 
@@ -68,18 +66,16 @@ type Image struct {
 	RGBA   *image.RGBA
 	width  int
 	height int
-	geom   *geom.Geom
-	tex    graphics.Texture
-	rect   image.Rectangle //rgba position in tex
+
+	tex  graphics.Texture
+	rect image.Rectangle //rgba position in tex
+
+	fillColor color.Color
 
 	subs  []*Image
 	isSub bool
 
 	subDraw []*Image
-}
-
-func (img *Image) Geom() *geom.Geom {
-	return img.geom
 }
 
 func (img *Image) Dx() int {
@@ -91,10 +87,7 @@ func (img *Image) Dy() int {
 }
 
 func (img *Image) Fill(c color.Color) {
-	draw.Draw(img.RGBA, img.RGBA.Bounds(), &image.Uniform{c}, image.ZP, draw.Src)
-	if img.tex != nil {
-		img.tex.BindData(img.RGBA.Pix)
-	}
+	img.fillColor = c
 }
 
 func (img *Image) Release() {
@@ -109,15 +102,13 @@ func (img *Image) SubImage(r image.Rectangle) *Image {
 
 	x := img.rect.Min.X + r.Min.X
 	y := img.rect.Min.Y + r.Min.Y
+
 	i := &Image{
 		rect:   image.Rect(x, y, x+r.Dx(), y+r.Dy()),
 		width:  r.Dx(),
 		height: r.Dy(),
-		geom:   geom.New(),
 		isSub:  true,
-	}
-	if img.tex != nil {
-		i.tex = img.tex
+		tex:    img.tex,
 	}
 	if img.subs == nil {
 		img.subs = []*Image{}
@@ -130,7 +121,8 @@ func (img *Image) Load() {
 	if img.isSub {
 		return
 	}
-	img.tex = graphics.NewTexture2D(img.width, img.height)
+
+	img.tex = graphics.CreateTexture2D(img.width, img.height)
 	img.tex.BindData(img.RGBA.Pix)
 
 	var loadSub func(imgs []*Image)
@@ -146,14 +138,20 @@ func (img *Image) Load() {
 	loadSub(img.subs)
 }
 
-func (img *Image) Draw(opts *geom.Geom) {
+func (img *Image) Draw(opts *DrawOptions) {
 	if img.tex == nil {
 		panic("limao Image must be preload. ")
 	}
-	g := geom.New().Add(img.geom)
-	if opts != nil {
-		g.Add(opts)
+	if opts == nil {
+		opts = &DrawOptions{}
 	}
 
-	graphics.DrawTexture2D(img.tex, *g, img.rect)
+	img.tex.Draw(
+		graphics.DrawOptions{
+			GeoM:     &opts.GeoM,
+			Uniforms: opts.Uniforms,
+			Color:    img.fillColor,
+			Alpha:    opts.Alpha,
+		},
+		img.rect)
 }

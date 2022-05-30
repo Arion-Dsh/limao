@@ -1,10 +1,11 @@
 package graphics
 
 import (
+	"errors"
 	"limao/graphics/gl"
 )
 
-type framebufferv3 struct {
+type framebuffer struct {
 	ctx gl.Context
 
 	vao gl.VertexArray
@@ -21,18 +22,19 @@ type framebufferv3 struct {
 	program gl.Program
 }
 
-func (fb *framebufferv3) id() gl.Framebuffer {
+func (fb *framebuffer) id() gl.Framebuffer {
+
 	return fb.fb
 }
 
-func newframeBuffer(ctx gl.Context, w, h int) framebuffer {
+func newframeBuffer(ctx gl.Context, w, h int) (*framebuffer, error) {
 
 	program, err := CreateProgram(ctx, vsSc, fsSc)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	fb := &framebufferv3{
+	fb := &framebuffer{
 		ctx: ctx,
 
 		vbo:          ctx.CreateBuffer(),
@@ -48,16 +50,9 @@ func newframeBuffer(ctx gl.Context, w, h int) framebuffer {
 
 	ctx.Enable(gl.DEPTH_TEST)
 
-	fb.vao = ctx.CreateVertexArray()
-	ctx.BindVertexArray(fb.vao)
-
 	ctx.BindBuffer(gl.ARRAY_BUFFER, fb.vbo)
 	ctx.BufferData(gl.ARRAY_BUFFER, fbData, gl.STATIC_DRAW)
 
-	ctx.EnableVertexAttribArray(fb.posLoc)
-	ctx.VertexAttribPointer(fb.posLoc, 2, gl.FLOAT, false, 4*4, 0)
-	ctx.EnableVertexAttribArray(fb.texCoordsLoc)
-	ctx.VertexAttribPointer(fb.texCoordsLoc, 2, gl.FLOAT, false, 4*4, 2*4)
 	// framebuffer
 	ctx.BindFramebuffer(gl.FRAMEBUFFER, fb.fb)
 
@@ -79,13 +74,13 @@ func newframeBuffer(ctx gl.Context, w, h int) framebuffer {
 	// now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
 
 	if ctx.CheckFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE {
-		panic("framebuffer is not complete")
+		return nil, errors.New("framebuffer is not complete")
 	}
 
-	return fb
+	return fb, nil
 }
 
-func (fb *framebufferv3) resize(w, h int) {
+func (fb *framebuffer) resize(w, h int) {
 
 	fb.ctx.BindTexture(gl.TEXTURE_2D, fb.tex)
 	fb.ctx.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int(w), int(h), gl.RGBA, gl.UNSIGNED_BYTE, nil)
@@ -93,36 +88,39 @@ func (fb *framebufferv3) resize(w, h int) {
 	fb.ctx.RenderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, w, h)
 }
 
-func (fb *framebufferv3) draw() {
+func (fb *framebuffer) draw() {
 	ctx := fb.ctx
 	ctx.BindFramebuffer(gl.FRAMEBUFFER, gl.Framebuffer{})
+
 	// clear all relevant buffers
 	ctx.Disable(gl.DEPTH_TEST)
 
 	ctx.Enable(gl.BLEND)
-
-	ctx.ClearColor(255, 255, 255, 1)
-	ctx.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 	ctx.UseProgram(fb.program)
 
 	ctx.ActiveTexture(gl.TEXTURE0)
 	ctx.BindTexture(gl.TEXTURE_2D, fb.tex)
 
-	ctx.BindVertexArray(fb.vao)
+	ctx.BindBuffer(gl.ARRAY_BUFFER, fb.vbo)
+	ctx.EnableVertexAttribArray(fb.posLoc)
+	ctx.VertexAttribPointer(fb.posLoc, 2, gl.FLOAT, false, 4*4, 0)
+
+	ctx.EnableVertexAttribArray(fb.texCoordsLoc)
+	ctx.VertexAttribPointer(fb.texCoordsLoc, 2, gl.FLOAT, false, 4*4, 2*4)
+
 	ctx.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+	ctx.DisableVertexAttribArray(fb.posLoc)
+	ctx.DisableVertexAttribArray(fb.texCoordsLoc)
 
 	ctx.Disable(gl.BLEND)
 
 	ctx.BindFramebuffer(gl.FRAMEBUFFER, fb.fb)
 
-	// clear all relevant buffers
-	ctx.ClearColor(255, 255, 255, 1)
-	ctx.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
 }
 
-func (fb *framebufferv3) release() {
+func (fb *framebuffer) release() {
 
 	ctx := g.ctx
 	ctx.DeleteVertexArray(fb.vao)

@@ -1,5 +1,5 @@
-//go:build linux || darwin || (darwin && !ios) || windows
-// +build linux darwin darwin,!ios windows
+//go:build (linux && !android) || (darwin && !ios) || windows
+// +build linux,!android darwin,!ios windows
 
 package limao
 

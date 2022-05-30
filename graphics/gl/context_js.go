@@ -26,9 +26,10 @@ func (ctx *context) Version() float32 {
 
 func NewContext(canvasEl js.Value) (Context, error) {
 	gl := canvasEl.Call("getContext", "webgl2")
-	version := float32(2.0)
+	version := float32(3.0)
 	if gl.IsNull() {
 		gl = canvasEl.Call("getContext", "webgl")
+		version = float32(2.0)
 	}
 	webgl := &context{gl, version}
 	return webgl, nil

@@ -1,5 +1,5 @@
 //go:build itest
-//+build itest
+// +build itest
 
 package main
 

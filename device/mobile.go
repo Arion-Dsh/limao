@@ -1,5 +1,5 @@
-//go:build android || ios || itest
-//+build android ios || itest
+//go:build android || ios || mobile
+// +build android ios mobile
 
 package device
 

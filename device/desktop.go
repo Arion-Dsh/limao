@@ -1,5 +1,5 @@
-// go:build linux || darwin || windows
-// +build linux || darwin || windows
+//go:build (linux && !android) || darwin || windows
+// +build linux,!android darwin windows
 
 package device
 

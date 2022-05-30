@@ -8,10 +8,11 @@ import (
 func init() {
 	g = &graphicsT{
 		mu: sync.Mutex{},
-		wr: sync.RWMutex{},
 		// vw, vh was hack for webgl
 		vw: 4,
 		vh: 4,
+
+		buffers: map[string]gl.Buffer{},
 	}
 }
 
@@ -20,24 +21,32 @@ var g *graphicsT
 type graphicsT struct {
 	ctx gl.Context
 
-	fb     framebuffer
+	buffers map[string]gl.Buffer
+
+	fb framebuffer
+
 	images images
 	vw, vh int
 
-	mu sync.Mutex
-	wr sync.RWMutex
+	imageShader Shader
 
-	executes chan func()
+	mu sync.Mutex
 }
 
 func Load(ctx gl.Context) {
+
 	g.ctx = ctx
-	// if g.fb != nil {
-	// return
-	// }
-	// if g.ctx.Version() >= 3.0 {
-	// g.fb = newframeBuffer(g.ctx, g.vw, g.vh)
-	// }
+
+	if g.imageShader == nil {
+
+		s, err := New2Dshader(new(ShaderOption))
+
+		if err != nil {
+			panic("create dufualt images shader error")
+		}
+		g.imageShader = s
+
+	}
 
 }
 func SetViewPort(w, h int) {
@@ -47,9 +56,6 @@ func SetViewPort(w, h int) {
 	g.vh = h
 	g.mu.Unlock()
 	g.ctx.Viewport(0, 0, w, h)
-	if g.fb != nil {
-		g.fb.resize(w, h)
-	}
 
 }
 
@@ -59,11 +65,7 @@ func Clear() {
 }
 
 func Draw() {
-	// if g.fb == nil {
-	// return
-	// }
 	g.mu.Lock()
-	// g.fb.draw()
 	g.ctx.Flush()
 	g.mu.Unlock()
 }
@@ -74,8 +76,4 @@ func Release() {
 	if g.images != nil {
 		g.images.release()
 	}
-	//  if g.fb != nil {
-	// g.fb.release()
-
-	// }
 }

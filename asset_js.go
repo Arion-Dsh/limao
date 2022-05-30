@@ -1,5 +1,5 @@
 //go:build js
-//+build js
+// +build js
 
 package limao
 

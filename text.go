@@ -3,7 +3,6 @@ package limao
 import (
 	"image"
 	"image/color"
-	"limao/geom"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
@@ -16,7 +15,7 @@ type text struct {
 
 var textCache map[text]*Image = map[text]*Image{}
 
-func DrawText(opts *geom.Geom, texts string, clr color.Color, face font.Face) {
+func DrawText(texts string, clr color.Color, face font.Face) {
 
 	fonth := face.Metrics().Height
 	var dx, dy fixed.Int26_6
@@ -51,8 +50,8 @@ func DrawText(opts *geom.Geom, texts string, clr color.Color, face font.Face) {
 			textImg.Load()
 
 		}
-		// geom.Translate(x+dx.Ceil(), y+dy.Ceil())
-		opt := geom.New().Translate(dx.Ceil(), dy.Ceil()).Add(opts)
+		opt := new(DrawOptions)
+		opt.GeoM.Translate(dx.Ceil(), dy.Ceil())
 		textImg.Draw(opt)
 		dx += fontw
 
